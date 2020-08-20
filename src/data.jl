@@ -18,7 +18,7 @@ struct Data
 end
 
 """
-    read_data(filename::String, delim=nothing, dq::Float64=0.05, dR::Float64=0.1)
+    read_data(filename::String; delim=nothing, dq::Float64=0.05, dR::Float64=0.1)
 
 Read experimental data from a file and store in a `Jeff.Data` object. 
 
@@ -33,7 +33,7 @@ Returns
 -------
 - `::Jeff.Data` : a data object containing the relevant information.
 """
-function read_data(filename::String, delim=nothing, dq::Float64=0.05, dR::Float64=0.1)
+function read_data(filename::String; delim=nothing, dq::Float64=0.05, dR::Float64=0.1)
     if delim == nothing
         x = readdlm(filename)
     else

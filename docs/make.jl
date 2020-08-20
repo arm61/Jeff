@@ -7,7 +7,8 @@ makedocs(sitename="Jeff",
              "Home" => "index.md",
              "API" => [
                 "reflect" => "reflect.md",
-                "data" => "data.md"
+                "data" => "data.md",
+                "model" => "model.md"
              ]
          ])
 
