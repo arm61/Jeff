@@ -1,3 +1,4 @@
+import Pkg; Pkg.add("Documenter")
 using Documenter, Jeff, Measurements
 
 makedocs(sitename="Jeff", 
