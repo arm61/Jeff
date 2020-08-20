@@ -11,6 +11,7 @@ DX = X .* 0.4
     @test all(isapprox.(Measurements.value.(data.R), Y, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.q), DX, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.R), DY, atol=1e-9))
+    @test isequal(data.filepath, string(pwd(), Base.Filesystem.path_separator, "four_col.dat"))
 end
 
 @testset "data_three_col" begin
@@ -19,6 +20,7 @@ end
     @test all(isapprox.(Measurements.value.(data.R), Y, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.q), X .* 0.05, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.R), DY, atol=1e-9))
+    @test isequal(data.filepath, string(pwd(), Base.Filesystem.path_separator, "three_col.dat"))
 end
 
 @testset "data_two_col" begin
@@ -27,6 +29,7 @@ end
     @test all(isapprox.(Measurements.value.(data.R), Y, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.q), X .* 0.05, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.R), Y .* 0.1, atol=1e-9))
+    @test isequal(data.filepath, string(pwd(), Base.Filesystem.path_separator, "two_col.dat"))
 end
 
 @testset "data_one_col" begin

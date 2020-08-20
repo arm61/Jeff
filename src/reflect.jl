@@ -3,9 +3,23 @@ using Interpolations
 const TINY = 1e-30
 const _FWHM = 2 * sqrt(2 * log(2.0))
 
-function abeles(q_vals::Array{Float64, 1}, layers::Array{Float64, 2}, scale=1., bkg=0.)
+"""
+    abeles(q::Array{Float64, 1}, layers::Array{Float64, 2})
+
+Performs the Abeles optical matrix calculation.
+
+Parameters
+----------
+- `q::Array{Float64, 1}` : q-vector values.
+- `layers::Array{Float64, 2}` : an Nx4 array, where N is the number of layers in the system, 1st item in a given row is the thickness, the 2nd the SLD, the 3rd the imaginary SLD, and the 4th the roughness with the layer above.
+
+Returns
+-------
+- `::Array{Float64, 1}` : unsmeared reflectometry values for the given q-vectors. 
+"""
+function abeles(q::Array{Float64, 1}, layers::Array{Float64, 2})
     nlayers = size(layers, 1) - 2
-    q = hcat(fill(q_vals, size(layers, 1))...)
+    q = hcat(fill(q, size(layers, 1))...)
     npnts = size(q, 1)
     
     mi00 = ones(ComplexF64, npnts, nlayers + 1)
@@ -48,13 +62,26 @@ function abeles(q_vals::Array{Float64, 1}, layers::Array{Float64, 2}, scale=1., 
     r = (mrtot01 ./ mrtot00)
     
     reflectivity = r .* conj(r)
-    reflectivity *= scale
-    reflectivity .+= bkg
     reflectivity = real(reflectivity)
     return reflectivity
 end
 
-function same_convolution(a, b)
+"""
+    same_convolution(a::Array{Float64, 1}, b::Array{Float64, 1})
+
+Performs a convolution of one-dimensional arrays equivalent to the [`np.convolve`](https://numpy.org/doc/stable/reference/generated/numpy.convolve.html), where the `mode` is `'same'`. 
+
+Parameters
+----------
+- `a::Array{Float64, 1}` : first array to convolve.
+- `b::Array{Float64, 1}` : second array to convolve.
+
+Returns
+-------
+- `::Array{Float64, 1}` : discrete, linear convolution of `a` and `b`. 
+"""
+function same_convolution(a::Array{Float64, 1}, b::Array{Float64, 1})
+
     m = length(a)
     n = length(b)
     
@@ -73,12 +100,43 @@ function same_convolution(a, b)
     return output
 end
 
-function gauss(x, s)
+"""
+    gauss(x::Array{Float64, 1}, s::Float64) 
+
+A Gaussian kernel for resolution smearing. 
+
+Parameters
+----------
+- `x::Array{Float64, 1}` : the kernal positions.
+- `s::Float64` : the width of the kernel.
+
+Returns
+-------
+- `::Array{Float64, 1}`: probabilities for `x`. 
+"""
+function gauss(x::Array{Float64, 1}, s::Float64) 
     g = 1. / s / sqrt(2 * pi) * exp.(-0.5 * x .^ 2 / s / s)
     return g
 end
 
-function constant_smearing(q::Array{Float64, 1}, w::Array{Float64, 2}, resolution)
+"""
+    constant_smearing(q::Array{Float64, 1}, w::Array{Float64, 2}, resolution::Float64=0.5, scale::Float64=1., bkg::Float64=0.)
+
+Perform the reflectometry calculation with a constant convolutional smearing. 
+
+Parameters
+----------
+- `q::Array{Float64, 1}` : q-vector values.
+- `layers::Array{Float64, 2}` : an Nx4 array, where N is the number of layers in the system, 1st item in a given row is the thickness, the 2nd the SLD, the 3rd the imaginary SLD, and the 4th the roughness with the layer above.
+- `resolution::Float64` : the percentage resolution (dq/q) to be used. Defaults to `5.`.
+- `scale::Float64` : the multiplicative scale factor assocaited with the reflectometry profile. Defaults to `1.`
+- `bkg::Float64` : the uniform background to add to the profile. Defaults to `0.`. 
+
+Returns
+-------
+- `::Array{Float64, 1}` : smeared reflectometry values for the given q-vectors. 
+"""
+function constant_smearing(q::Array{Float64, 1}, w::Array{Float64, 2}, resolution::Float64=5., scale::Float64=1., bkg::Float64=0.)
     if resolution < 0.5
         return abeles(q, w)
     end
@@ -100,7 +158,7 @@ function constant_smearing(q::Array{Float64, 1}, w::Array{Float64, 2}, resolutio
     xtemp = range(start, finish, length=Int(interpnum))
     xlin = 10. .^ xtemp
     
-    gauss_x = range(-1.7 * resolution, 1.7 * resolution, length=gaussnum)
+    gauss_x = collect(range(-1.7 * resolution, 1.7 * resolution, length=gaussnum))
     gauss_y = gauss(gauss_x, resolution / _FWHM)
 
     rvals = abeles(xlin, w)
@@ -109,5 +167,7 @@ function constant_smearing(q::Array{Float64, 1}, w::Array{Float64, 2}, resolutio
  
     itp = LinearInterpolation(xlin, smeared_rvals)
     smeared_output = itp(q)
+    smeared_output *= scale
+    smeared_output .+= bkg
     return smeared_output
 end
