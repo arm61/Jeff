@@ -1,5 +1,5 @@
 import Pkg; Pkg.add("Documenter")
-using Documenter, Jeff, Measurements
+using Documenter, Jeff
 
 makedocs(sitename="Jeff", 
          modules=[Jeff],
