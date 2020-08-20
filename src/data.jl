@@ -1,7 +1,7 @@
 using Measurements, DelimitedFiles
 
 """
-    Data(q::Array{Measurements.Measurement}, R::Array{Measurements.Measurement})
+    Data(q::Array{Measurements.Measurement}, R::Array{Measurements.Measurement}, filepath::String)
 
 The `struct` for storing experimental datasets. 
 
