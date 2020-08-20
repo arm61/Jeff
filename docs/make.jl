@@ -7,5 +7,6 @@ makedocs(sitename="Jeff",
                 "reflect" => "reflect.md",
                 "data" => "data.md"
              ]
-         ],
-         repo = "github.com/arm61/Jeff.jl.git",)
+         ])
+
+deploydocs(repo = "github.com/arm61/Jeff.jl.git")
