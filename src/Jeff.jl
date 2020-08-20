@@ -2,6 +2,7 @@ module Jeff
 using DelimitedFiles
 
 include("reflect.jl")
+include("data.jl")
 
 function example_layers()
     layers = Array(zeros(Float64, 12))

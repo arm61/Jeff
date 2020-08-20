@@ -1,5 +1,4 @@
 using Interpolations
-export abeles
 
 const TINY = 1e-30
 const _FWHM = 2 * sqrt(2 * log(2.0))
