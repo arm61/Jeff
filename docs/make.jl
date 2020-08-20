@@ -4,6 +4,7 @@ using Documenter, Jeff
 makedocs(sitename="Jeff", 
          modules=[Jeff],
          pages = [
+             "Home" => "index.md",
              "API" => [
                 "reflect" => "reflect.md",
                 "data" => "data.md"
