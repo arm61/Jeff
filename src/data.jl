@@ -1,7 +1,7 @@
-using Measurements, DelimitedFiles
+using Measurements, DelimitedFiles, Distributions, LinearAlgebra
 
 """
-    Data(q::Array{Measurements.Measurement}, R::Array{Measurements.Measurement}, filepath::String)
+    Data(q::Array{Measurements.Measurement}, R::Array{Measurements.Measurement}, distribution::Distributions.MultivariateDistribution, filepath::String)
 
 The `struct` for storing experimental datasets. 
 
@@ -9,11 +9,13 @@ Parameters
 ----------
 - `q::Array{Measurement}` : the q-vector values, including dq uncertainty.
 - `R::Array{Measurement}` : the reflected intensity values, including uncertainty.
+- `distribution::Distributions.MultivariateDistribution` : a multidimensional probabilistic description of the data.
 - `filepath::String` : the file path for the file. 
 """
 struct Data
     q::Array{Measurement}
     R::Array{Measurement}
+    distribution::Distributions.MultivariateDistribution
     filepath::String
 end
 
@@ -34,7 +36,7 @@ Returns
 - `::Jeff.Data` : a data object containing the relevant information.
 """
 function read_data(filename::String; delim=nothing, dq::Float64=0.05, dR::Float64=0.1)
-    if delim == nothing
+    if delim === nothing
         x = readdlm(filename)
     else
         x = readdlm(filename, delim)
@@ -60,5 +62,7 @@ function read_data(filename::String; delim=nothing, dq::Float64=0.05, dR::Float6
     else
         throw(ArgumentError("The file that you are opening does not have 2, 3, or 4 columns"))
     end
-    return Data(q, R, filename)
+    distribution = MvNormal(Measurements.value.(R), Diagonal(Measurements.uncertainty.(R)))
+    return Data(q, R, distribution, filename)
 end
+

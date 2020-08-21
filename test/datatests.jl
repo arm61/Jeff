@@ -1,4 +1,4 @@
-using Jeff, Test, Measurements
+using Jeff, Test, Measurements, Distributions, LinearAlgebra
 
 X = range(0.01, 0.3, length=100)
 Y =range(1, 1e-6, length=100)
@@ -12,11 +12,13 @@ DX = X .* 0.4
         q[i] = measurement(X[i], DX[i])
         R[i] = measurement(Y[i], DY[i])
     end
-    data = Jeff.Data(q, R, "filename.dat")
+    distribution = MvNormal(Measurements.value.(R), Diagonal(Measurements.uncertainty.(R)))
+    data = Jeff.Data(q, R, distribution, "filename.dat")
     @test all(isapprox.(Measurements.value.(data.q), X, atol=1e-9))
     @test all(isapprox.(Measurements.value.(data.R), Y, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.q), DX, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.R), DY, atol=1e-9))
+    @test all(isapprox.(mean(data.distribution), Y, atol=1e-9)) 
     @test isequal(data.filepath, "filename.dat")
 end
 
@@ -26,6 +28,7 @@ end
     @test all(isapprox.(Measurements.value.(data.R), Y, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.q), DX, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.R), DY, atol=1e-9))
+    @test all(isapprox.(mean(data.distribution), Y, atol=1e-9)) 
     @test isequal(data.filepath, string(pwd(), Base.Filesystem.path_separator, "four_col.dat"))
 end
 
@@ -35,6 +38,7 @@ end
     @test all(isapprox.(Measurements.value.(data.R), Y, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.q), X .* 0.05, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.R), DY, atol=1e-9))
+    @test all(isapprox.(mean(data.distribution), Y, atol=1e-9)) 
     @test isequal(data.filepath, string(pwd(), Base.Filesystem.path_separator, "three_col.dat"))
 end
 
@@ -44,6 +48,7 @@ end
     @test all(isapprox.(Measurements.value.(data.R), Y, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.q), X .* 0.05, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.R), Y .* 0.1, atol=1e-9))
+    @test all(isapprox.(mean(data.distribution), Y, atol=1e-9)) 
     @test isequal(data.filepath, string(pwd(), Base.Filesystem.path_separator, "two_col.dat"))
 end
 
