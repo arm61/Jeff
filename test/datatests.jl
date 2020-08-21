@@ -1,9 +1,24 @@
 using Jeff, Test, Measurements
 
 X = range(0.01, 0.3, length=100)
-Y = range(1, 1e-6, length=100)
+Y =range(1, 1e-6, length=100)
 DY = Y .* 0.001
 DX = X .* 0.4
+
+@testset "data_struct" begin
+    q = zeros(Measurement, 100)
+    R = zeros(Measurement, 100)
+    for i in range(1, 100, step=1)
+        q[i] = measurement(X[i], DX[i])
+        R[i] = measurement(Y[i], DY[i])
+    end
+    data = Jeff.Data(q, R, "filename.dat")
+    @test all(isapprox.(Measurements.value.(data.q), X, atol=1e-9))
+    @test all(isapprox.(Measurements.value.(data.R), Y, atol=1e-9))
+    @test all(isapprox.(Measurements.uncertainty.(data.q), DX, atol=1e-9))
+    @test all(isapprox.(Measurements.uncertainty.(data.R), DY, atol=1e-9))
+    @test isequal(data.filepath, "filename.dat")
+end
 
 @testset "data_four_col" begin
     data = Jeff.read_data(string(pwd(), Base.Filesystem.path_separator, "four_col.dat"))
