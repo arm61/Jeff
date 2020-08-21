@@ -1,4 +1,7 @@
-import Pkg; Pkg.add("Documenter")
+import Pkg
+Pkg.add("Documenter")
+Pkg.add("Distributions")
+
 using Documenter, Jeff
 
 makedocs(sitename="Jeff.jl", 
