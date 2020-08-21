@@ -1,5 +1,5 @@
 """
-    Parameter(value::Float64, vary::Bool, prior::UnivariateDistribution)
+    Parameter(value::Float64, vary::Bool, prior::Distrbutions.UnivariateDistribution)
 
 A parameter that can be optimised in the analysis procress.
 
@@ -7,7 +7,7 @@ Parameters
 ----------
 - `value::Float64` : the value for the given parameter.
 - `vary::Bool` : should the parameter be varied in optimisation. 
-- `prior::Distrbutions.UnivariateDistribution` : the priopr probability distribution for the parameter. 
+- `prior::Distrbutions.UnivariateDistribution` : the prior probability distribution for the parameter. If `vary` is `false`, then `nothing` can be passed as the `prior`.
 """
 struct Parameter
     value::Float64
