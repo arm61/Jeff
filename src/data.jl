@@ -5,8 +5,7 @@ using Measurements, DelimitedFiles, Distributions, LinearAlgebra
 
 The `struct` for storing experimental datasets. 
 
-Parameters
-----------
+### Parameters
 - `q::Array{Measurement}` : the q-vector values, including dq uncertainty.
 - `R::Array{Measurement}` : the reflected intensity values, including uncertainty.
 - `distribution::Distributions.MultivariateDistribution` : a multidimensional probabilistic description of the data.
@@ -24,15 +23,13 @@ end
 
 Read experimental data from a file and store in a `Jeff.Data` object. 
 
-Parameters
-----------
+### Parameters
 - `filename::String` : the file path to be read in. 
 - `delim::AbstractChar` : the delimiting character in the input file. If the file is whitespace delimited, pass `nothing`. Defaults to `nothing`.
 - `dq::Float64` : percentage q-vector uncertainty, if not present in file. Defaults to `0.05`.
 - `dR::Float64` : percentage reflected intensity uncertainty, if not present in file. Defaults to `0.1`.
 
-Returns
--------
+### Returns
 - `::Jeff.Data` : a data object containing the relevant information.
 """
 function read_data(filename::String; delim=nothing, dq::Float64=0.05, dR::Float64=0.1)
