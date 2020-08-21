@@ -1,16 +1,35 @@
 """
-    Layer(thick::Float64, sld::ComplexF64, rough::Float64)
+    Parameter(value::Float64, vary::Bool, prior::UnivariateDistribution)
+
+A parameter that can be optimised in the analysis procress.
+
+Parameters
+----------
+- `value::Float64` : the value for the given parameter.
+- `vary::Bool` : should the parameter be varied in optimisation. 
+- `prior::Distrbutions.UnivariateDistribution` : the priopr probability distribution for the parameter. 
+"""
+struct Parameter
+    value::Float64
+    vary::Bool
+    prior
+end
+
+"""
+    Layer(thick::Jeff.Parameter, sld::Jeff.Parameter, isld::Jeff.Parameter, rough::Jeff.Parameter)
 
 A description of a layer in a system. 
 
 Parameters
 ----------
-- `thick::Float64` : the layer thickness.
-- `sld::ComplexF64` : layer scattering length density.
-- `rough::Float64` : roughness with layer above.
+- `thick::Jeff.Parameter` : the layer thickness.
+- `sld::Jeff.Parameter` : layer real scattering length density.
+- `isld::Jeff.Parameter` : layer imaginary scattering length density.
+- `rough::Jeff.Parameter` : roughness with layer above.
 """
 struct Layer
-    thick::Float64
-    sld::ComplexF64
-    rough::Float64
+    thick::Jeff.Parameter
+    sld::Jeff.Parameter
+    isld::Jeff.Parameter
+    rough::Jeff.Parameter
 end
