@@ -1,5 +1,6 @@
 import Pkg
 Pkg.add("Documenter")
+Pkg.add("Distritbutions")
 
 using Documenter, Jeff, Distributions
 
