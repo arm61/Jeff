@@ -1,5 +1,3 @@
-using Distributions
-
 """
     nll(distribution::Distributions.MultivariateDistribution, model::Array{Float64, 1})
 
