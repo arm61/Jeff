@@ -1,5 +1,3 @@
-using Distributions
-
 """
     Parameter(value::Float64, vary::Bool, prior::Distrbutions.UnivariateDistribution)
 

@@ -1,7 +1,7 @@
 import Pkg
 Pkg.add("Documenter")
 
-using Documenter, Jeff
+using Documenter, Jeff, Distributions
 
 makedocs(sitename="Jeff.jl", 
          modules=[Jeff],
