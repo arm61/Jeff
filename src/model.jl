@@ -8,7 +8,7 @@ A parameter that can be optimised in the analysis procress.
 - `vary::Bool` : should the parameter be varied in optimisation. 
 - `prior::Distrbutions.UnivariateDistribution` : the prior probability distribution for the parameter. If `vary` is `false`, then `nothing` can be passed as the `prior`.
 """
-struct Parameter
+mutable struct Parameter
     value::Float64
     vary::Bool
     prior
@@ -25,7 +25,7 @@ A description of a layer in a system.
 - `isld::Jeff.Parameter` : layer imaginary scattering length density.
 - `rough::Jeff.Parameter` : roughness with layer above.
 """
-struct Layer
+mutable struct Layer
     thick::Jeff.Parameter
     sld::Jeff.Parameter
     isld::Jeff.Parameter
@@ -42,7 +42,7 @@ The model from which the reflectometry should be calculated.
 - `bkg::Jeff.Parameter` : uniform background. 
 - `layers::Array{Jeff.Layer}` : the array of [`Jeff.Layer`] objects that describe the model.
 """
-struct Model
+mutable struct Model
     scale::Jeff.Parameter
     bkg::Jeff.Parameter
     layers::Array{Jeff.Layer}
