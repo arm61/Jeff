@@ -136,7 +136,7 @@ Returns
 -------
 - `::Array{Float64, 1}` : smeared reflectometry values for the given q-vectors. 
 """
-function constant_smearing(q::Array{Float64, 1}, w::Array{Float64, 2}, resolution::Float64=5., scale::Float64=1., bkg::Float64=0.)
+function constant_smearing(q::Array{Float64, 1}, w::Array{Float64, 2}; resolution::Float64=5., scale::Float64=1., bkg::Float64=0.)
     if resolution < 0.5
         return abeles(q, w)
     end
