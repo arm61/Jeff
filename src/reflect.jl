@@ -8,13 +8,11 @@ const _FWHM = 2 * sqrt(2 * log(2.0))
 
 Performs the Abeles optical matrix calculation.
 
-Parameters
-----------
+### Parameters
 - `q::Array{Float64, 1}` : q-vector values.
 - `layers::Array{Float64, 2}` : an Nx4 array, where N is the number of layers in the system, 1st item in a given row is the thickness, the 2nd the SLD, the 3rd the imaginary SLD, and the 4th the roughness with the layer above.
 
-Returns
--------
+### Returns
 - `::Array{Float64, 1}` : unsmeared reflectometry values for the given q-vectors. 
 """
 function abeles(q::Array{Float64, 1}, layers::Array{Float64, 2})
@@ -71,13 +69,11 @@ end
 
 Performs a convolution of one-dimensional arrays equivalent to the [`np.convolve`](https://numpy.org/doc/stable/reference/generated/numpy.convolve.html), where the `mode` is `'same'`. 
 
-Parameters
-----------
+### Parameters
 - `a::Array{Float64, 1}` : first array to convolve.
 - `b::Array{Float64, 1}` : second array to convolve.
 
-Returns
--------
+### Returns
 - `::Array{Float64, 1}` : discrete, linear convolution of `a` and `b`. 
 """
 function same_convolution(a::Array{Float64, 1}, b::Array{Float64, 1})
@@ -105,13 +101,11 @@ end
 
 A Gaussian kernel for resolution smearing. 
 
-Parameters
-----------
+### Parameters
 - `x::Array{Float64, 1}` : the kernal positions.
 - `s::Float64` : the width of the kernel.
 
-Returns
--------
+### Returns
 - `::Array{Float64, 1}`: probabilities for `x`. 
 """
 function gauss(x::Array{Float64, 1}, s::Float64) 
@@ -124,16 +118,14 @@ end
 
 Perform the reflectometry calculation with a constant convolutional smearing. 
 
-Parameters
-----------
+### Parameters
 - `q::Array{Float64, 1}` : q-vector values.
 - `layers::Array{Float64, 2}` : an Nx4 array, where N is the number of layers in the system, 1st item in a given row is the thickness, the 2nd the SLD, the 3rd the imaginary SLD, and the 4th the roughness with the layer above.
 - `resolution::Float64` : the percentage resolution (dq/q) to be used. Defaults to `5.`.
 - `scale::Float64` : the multiplicative scale factor assocaited with the reflectometry profile. Defaults to `1.`
 - `bkg::Float64` : the uniform background to add to the profile. Defaults to `0.`. 
 
-Returns
--------
+### Returns
 - `::Array{Float64, 1}` : smeared reflectometry values for the given q-vectors. 
 """
 function constant_smearing(q::Array{Float64, 1}, w::Array{Float64, 2}; resolution::Float64=5., scale::Float64=1., bkg::Float64=0.)

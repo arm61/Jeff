@@ -3,8 +3,7 @@
 
 A parameter that can be optimised in the analysis procress.
 
-Parameters
-----------
+### Parameters
 - `value::Float64` : the value for the given parameter.
 - `vary::Bool` : should the parameter be varied in optimisation. 
 - `prior::Distrbutions.UnivariateDistribution` : the prior probability distribution for the parameter. If `vary` is `false`, then `nothing` can be passed as the `prior`.
@@ -20,8 +19,7 @@ end
 
 A description of a layer in a system. 
 
-Parameters
-----------
+### Parameters
 - `thick::Jeff.Parameter` : the layer thickness.
 - `sld::Jeff.Parameter` : layer real scattering length density.
 - `isld::Jeff.Parameter` : layer imaginary scattering length density.
@@ -55,12 +53,10 @@ end
 
 Convert from a array of [`Jeff.Layer`](@ref) objects to an array that is compatible with [`reflect.jl`](@ref) functions.
 
-Parameters
-----------
+### Parameters
 - `layers::Array{Jeff.Layer}` : an array of [`Jeff.Layer`](@ref) objects.
 
-Returns
--------
+### Returns
 - `::Array{Float64, 2}` : a two-dimensional array that is compatible with the [`reflect.jl`](@ref) functions.
 """
 function convert_to_array(layers::Array{Jeff.Layer})
