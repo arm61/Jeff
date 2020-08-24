@@ -19,20 +19,39 @@ end
     @test isequal(THICK.prior, nothing)
 end
 
+function test_layer(layer::Jeff.Layer)
+    @test isapprox(layer.thick.value, 50.0)
+    @test isequal(layer.thick.vary, false)
+    @test isequal(layer.thick.prior, nothing)
+    @test isapprox(layer.sld.value, 6.335)
+    @test isequal(layer.sld.vary, true)
+    @test isapprox(minimum(layer.sld.prior), 6.3)
+    @test isapprox(maximum(layer.sld.prior), 6.4)
+    @test isapprox(layer.isld.value, 0.000)
+    @test isequal(layer.isld.vary, false)
+    @test isequal(layer.isld.prior, nothing)
+    @test isequal(layer.rough.vary, true)
+    @test isapprox(meanlogx(layer.rough.prior), 5.)
+    @test isapprox(stdlogx(layer.rough.prior), 1.)
+end
+
 @testset "layer_struct" begin
-    @test isapprox(LAYER.thick.value, 50.0)
-    @test isequal(LAYER.thick.vary, false)
-    @test isequal(LAYER.thick.prior, nothing)
-    @test isapprox(LAYER.sld.value, 6.335)
-    @test isequal(LAYER.sld.vary, true)
-    @test isapprox(minimum(LAYER.sld.prior), 6.3)
-    @test isapprox(maximum(LAYER.sld.prior), 6.4)
-    @test isapprox(LAYER.isld.value, 0.000)
-    @test isequal(LAYER.isld.vary, false)
-    @test isequal(LAYER.isld.prior, nothing)
-    @test isequal(LAYER.rough.vary, true)
-    @test isapprox(meanlogx(LAYER.rough.prior), 5.)
-    @test isapprox(stdlogx(LAYER.rough.prior), 1.)
+    test_layer(LAYER)
+end
+
+@testset "model_struct" begin
+    scale = Jeff.Parameter(1, false, nothing)
+    bkg = Jeff.Parameter(1e-7, true, Uniform(1e-8, 1e-6))
+    model = Jeff.Model(scale, bkg, [LAYER, LAYER])
+    @test isapprox(model.scale.value, 1)
+    @test isequal(model.scale.vary, false)
+    @test isequal(model.scale.prior, nothing)
+    @test isapprox(model.bkg.value, 1e-7)
+    @test isequal(model.bkg.vary, true)
+    @test isapprox(minimum(model.bkg.prior), 1e-8)
+    @test isapprox(maximum(model.bkg.prior), 1e-6)
+    test_layer(model.layers[1])
+    test_layer(model.layers[2])
 end
 
 @testset "convert_to_array" begin

@@ -35,6 +35,22 @@ struct Layer
 end
 
 """
+    Model(scale::Jeff.Parmeter, bkg::Jeff.Parameter, layers::Array{Jeff.Layer})
+
+The model from which the reflectometry should be calculated. 
+
+### Parameters
+- `scale::Jeff.Parameter` : scale factor for reflectometry.
+- `bkg::Jeff.Parameter` : uniform background. 
+- `layers::Array{Jeff.Layer}` : the array of [`Jeff.Layer`] objects that describe the model.
+"""
+struct Model
+    scale::Jeff.Parameter
+    bkg::Jeff.Parameter
+    layers::Array{Jeff.Layer}
+end
+
+"""
     convert_to_array(layers::Array{Jeff.Layer})
 
 Convert from a array of [`Jeff.Layer`](@ref) objects to an array that is compatible with [`reflect.jl`](@ref) functions.
