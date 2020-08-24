@@ -1,4 +1,4 @@
-using Measurements, DelimitedFiles, Distributions, LinearAlgebra, Parameters
+using Measurements, DelimitedFiles, Distributions, LinearAlgebra
 
 """
     Data(q::Array{Measurements.Measurement}, R::Array{Measurements.Measurement}, distribution::Distributions.MultivariateDistribution, filepath::String)
@@ -10,7 +10,7 @@ The `struct` for storing experimental datasets.
 - `R::Array{Measurement}` : the reflected intensity values, including uncertainty.
 - `filepath::String` : the file path for the file. 
 """
-@with_kw struct Data
+struct Data
     q::Array{Measurement}
     R::Array{Measurement}
     name::String
