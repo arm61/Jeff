@@ -61,12 +61,12 @@ function read_data(filename::String; delim=nothing, dq::Float64=5., dR::Float64=
 end
 
 """
-    get_distribution(y::Array{Measurement})
+    get_distribution(y::Array{Measurements.Measurement})
 
 Return the probability distribution for the data.
 
 ### Parameters
-- `y::Array{Measurement}` : ordinate data (reflected intensity).
+- `y::Array{Measurements.Measurement}` : ordinate data (reflected intensity).
 
 ### Returns
 - `::Distributions.MvNormal` : probabilistic description of the data. 
@@ -76,16 +76,16 @@ function get_distribution(y::Array{Measurement})
 end
 
 """
-    transform(y::Array{Measurement}, f)
+    transform(y::Array{Measurements.Measurement}, f)
 
 Perform some transformation on the ordinate axis.
 
 ### Parameters
-- `y::Array{Measurement}` : ordinate data (reflected intensity).
+- `y::Array{Measurements.Measurement}` : ordinate data (reflected intensity).
 - `f` : transformation to perform. Defaults to natural logarithm.
 
 ### Returns
-- `::Array{Measurement}` : transformed ordinate.
+- `::Array{Measurements.Measurement}` : transformed ordinate.
 """
 function transform(y::Array{Measurement}; f=x->log.(x))
     return f(y)
