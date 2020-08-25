@@ -114,13 +114,13 @@ function gauss(x::Array{Float64, 1}, s::Float64)
 end
 
 """
-    constant_smearing(q::Array{Float64, 1}, w::Array{Float64, 2}, resolution::Float64=0.5, scale::Float64=1., bkg::Float64=0.)
+    constant_smearing(q::Array{Float64, 1}, w::Array{Float64, 2}; resolution::Float64=0.5, scale::Float64=1., bkg::Float64=0.)
 
 Perform the reflectometry calculation with a constant convolutional smearing. 
 
 ### Parameters
 - `q::Array{Float64, 1}` : q-vector values.
-- `layers::Array{Float64, 2}` : an Nx4 array, where N is the number of layers in the system, 1st item in a given row is the thickness, the 2nd the SLD, the 3rd the imaginary SLD, and the 4th the roughness with the layer above.
+- `w::Array{Float64, 2}` : an Nx4 array, where N is the number of layers in the system, 1st item in a given row is the thickness, the 2nd the SLD, the 3rd the imaginary SLD, and the 4th the roughness with the layer above.
 - `resolution::Float64` : the percentage resolution (dq/q) to be used. Defaults to `5.`.
 - `scale::Float64` : the multiplicative scale factor assocaited with the reflectometry profile. Defaults to `1.`
 - `bkg::Float64` : the uniform background to add to the profile. Defaults to `0.`. 
