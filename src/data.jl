@@ -87,6 +87,6 @@ Perform some transformation on the ordinate axis.
 ### Returns
 - `::Array{Measurement}` : transformed ordinate.
 """
-function transform(y::Array{Measurement}; f = x -> log.(x))
+function transform(y::Array{Measurement}; f=x->log.(x))
     return f(y)
 end
