@@ -1,8 +1,9 @@
 import Pkg
 Pkg.add("Documenter")
 Pkg.add("Distributions")
+Pkg.add("Measurements") 
 
-using Documenter, Jeff, Distributions
+using Documenter, Jeff, Distributionsm Measurements
 
 makedocs(sitename="Jeff.jl", 
          modules=[Jeff],
