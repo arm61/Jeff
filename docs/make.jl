@@ -3,7 +3,7 @@ Pkg.add("Documenter")
 Pkg.add("Distributions")
 Pkg.add("Measurements") 
 
-using Documenter, Jeff, Distributionsm Measurements
+using Documenter, Jeff, Distributions, Measurements
 
 makedocs(sitename="Jeff.jl", 
          modules=[Jeff],
