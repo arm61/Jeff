@@ -1,7 +1,7 @@
 using Jeff, Test, Measurements, Distributions, LinearAlgebra
 
 X = range(0.01, 0.3, length=100)
-Y =range(1, 1e-6, length=100)
+Y = range(1, 1e-6, length=100)
 DY = Y .* 0.001
 DX = X .* 0.4
 

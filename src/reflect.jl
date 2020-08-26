@@ -4,6 +4,27 @@ const TINY = 1e-30
 const _FWHM = 2 * sqrt(2 * log(2.0))
 
 """
+    matmul(a::Array{ComplexF64, 2}, b::Array{ComplexF64, 2})
+
+Perform matrix multiplication.
+
+### Parameters
+- `a::Array{ComplexF64, 2}` : first matrix.
+- `b::Array{ComplexF64, 2}` : second matrix.
+
+### Returns 
+- `::Array{ComplexF64, 2}` : result of multiplication.
+"""
+function matmul(a::Array{ComplexF64, 2}, b::Array{ComplexF64, 2})
+    c = zeros(ComplexF64, (2, 2))
+    c[1, 1] = a[1, 1] * b[1, 1] + a[1, 2] * b[2, 1]
+    c[1, 2] = a[1, 1] * b[1, 2] + a[1, 2] * b[2, 2]
+    c[2, 1] = a[2, 1] * b[1, 1] + a[2, 2] * b[2, 1]
+    c[2, 2] = a[2, 1] * b[1, 2] + a[2, 2] * b[2, 2]
+    return c
+end
+
+"""
     abeles(q::Array{Float64, 1}, layers::Array{Float64, 2})
 
 Performs the Abeles optical matrix calculation.
@@ -16,51 +37,55 @@ Performs the Abeles optical matrix calculation.
 - `::Array{Float64, 1}` : unsmeared reflectometry values for the given q-vectors. 
 """
 function abeles(q::Array{Float64, 1}, layers::Array{Float64, 2})
-    nlayers = size(layers, 1) - 2
-    q = hcat(fill(q, size(layers, 1))...)
+    nlayers = size(layers, 2) - 2
     npnts = size(q, 1)
+    reflectivity = zeros(Float64, npnts)
     
-    mi00 = ones(ComplexF64, npnts, nlayers + 1)
+    sub = layers[end, 2] + (1im * layers[end, 3] + TINY)
+    super = layers[1, 2] + 0im
+    sld = zeros(ComplexF64, nlayers + 2)
+    thick = zeros(ComplexF64, nlayers)
+    rough = zeros(ComplexF64, nlayers)
+
+    for ii = 2:nlayers
+        _t = layers[ii, 2] + (1im * layers[ii, 3] + TINY)
+        sld[ii] = 4e-6 * pi * (_t - super)
+        thick[ii - 1] = 0 + 1im * layers[ii, 1]
+        rough[ii - 1] = -2 * layers[ii, 4] ^ 2
+    end
+    sld[1] = 0 + 0im
+    sld[nlayers+1] = 4e-6 * pi * (sub - super)
+    rough[nlayers] = -2 * layers[end, 4] ^ 2
     
-    sld = zeros(ComplexF64, 1, nlayers + 2)
-    
-    sld[1, 2:end] += ((layers[2:end, 2] .- layers[1, 2]) + 1im * (abs.(layers[2:end, 3]) .+ TINY)) * 1e-6
-            
-    kn = sqrt.(q .^ 2 ./ 4 .- 4 .* pi .* sld)::Array{ComplexF64, 2}
+    mr = zeros(ComplexF64, (2, 2))
+    mi = zeros(ComplexF64, (2, 2))
+
+    for j = 1:npnts
+        q2 = q[j] ^ 2 / 4. + 0im
+        kn = q[j] / 2. + 0im
+        for ii = 1:nlayers # maybe nlayers + 1
+            knn = sqrt(q2 - sld[ii + 1])
+            rj = (kn - knn) / (kn + knn) * exp(kn * knn * rough[ii])
         
-    rj = kn[:, 1:end-1] .- kn[:, 2:end]
-    rj ./= (kn[:, 1:end-1] + kn[:, 2:end])
-    rj .*= exp.(-2 .* kn[:, 1:end-1] .* kn[:, 2:end] .* transpose(layers[2:end, 4]) .^ 2)
-    
-    if nlayers > 0
-        mi00[:, 2:end] = exp.(kn[:, 2:end-1] * 1im * abs.(layers[2:end-1, 1]))
+            if ii == 1
+                mr[1, 1] = 1. + 0im
+                mr[1, 2] = rj
+                mr[2, 2] = 1. + 0im
+                mr[2, 1] = rj
+            else
+                beta = exp(kn * thick[ii - 1])
+                mi[1, 1] = beta
+                mi[1, 2] = rj * beta
+                mi[2, 2] = (1. + 0im) / beta
+                mi[2, 1] = rj * mi[2, 2]
+                mr = matmul(mr, mi)
+            end
+            kn = knn
+        end
+        
+        r = mr[2, 1] / mr[1, 1]
+        reflectivity[j] = real(r * conj(r))
     end
-    mi11 = 1. ./ mi00
-    mi10 = rj .* mi00
-    mi01 = rj .* mi11    
-    
-    mrtot00 = mi00[:, 1]
-    mrtot01 = mi01[:, 1]
-    mrtot10 = mi10[:, 1]
-    mrtot11 = mi11[:, 1]
-    
-    for idx in range(2, nlayers + 1, step=1)
-        p0 = mrtot00 .* mi00[:, idx] .+ mrtot10 .* mi01[:, idx]
-        p1 = mrtot00 .* mi10[:, idx] .+ mrtot10 .* mi11[:, idx]
-        mrtot00 = p0
-        mrtot10 = p1
-
-        p0 = mrtot01 .* mi00[:, idx] .+ mrtot11 .* mi01[:, idx]
-        p1 = mrtot01 .* mi10[:, idx] .+ mrtot11 .* mi11[:, idx]
-
-        mrtot01 = p0
-        mrtot11 = p1
-    end
-            
-    r = (mrtot01 ./ mrtot00)
-    
-    reflectivity = r .* conj(r)
-    reflectivity = real(reflectivity)
     return reflectivity
 end
 
