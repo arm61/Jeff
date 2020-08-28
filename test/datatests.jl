@@ -82,7 +82,8 @@ end
         push!(res, Normal(X[i], DX[i]))
     end
     data = Jeff.Data(q, R, res, "test")
-    @test all(isapprox.(mean(Jeff.get_distribution(data.R)), Y, atol=1e-9))
+    @test all(isapprox.(hcat(mean.(Jeff.get_distribution(data.q, data.R))...)[1, :], X, atol=1e-9))
+    @test all(isapprox.(hcat(mean.(Jeff.get_distribution(data.q, data.R))...)[2, :], Y, atol=1e-9))
 end
 
 @testset "data_transform_default" begin

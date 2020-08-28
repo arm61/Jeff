@@ -84,8 +84,14 @@ Return the probability distribution for the data.
 ### Returns
 - `::Distributions.MvNormal` : probabilistic description of the data.
 """
-function get_distribution(y::Array{Measurement})
-    return MvNormal(Measurements.value.(y), Diagonal(Measurements.uncertainty.(y)))
+function get_distribution(x::Array{Measurement}, y::Array{Measurement})
+    distributions = []
+    for i = 1:size(x, 1)
+        position = [Measurements.value(x[i]), Measurements.value(y[i])]
+        uncertainty = [Measurements.uncertainty(x[i]), Measurements.uncertainty(y[i])]
+        push!(distributions, MvNormal(position, Diagonal(uncertainty)))
+    end
+    return distributions
 end
 
 """

@@ -3,5 +3,6 @@
 The code here is focused on optimisation and sampling
 
 ```@docs
-Jeff.nll(distribution::Distributions.MultivariateDistribution, model::Array{Float64, 1})
+Jeff.loglikelihood(distributions, model::Array{Float64, 2})
+Jeff.negativeloglikelihood(distributions, model::Array{Float64, 2})
 ```
