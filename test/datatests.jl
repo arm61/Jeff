@@ -67,7 +67,7 @@ end
     data = Jeff.read_data(string(pwd(), Base.Filesystem.path_separator, "with_res.dat"))
     @test all(isapprox.(Measurements.value.(data.q), X, atol=1e-9))
     @test all(isapprox.(Measurements.value.(data.R), Y, atol=1e-9))
-    @test all(isapprox.(Measurements.uncertainty.(data.q), DX, atol=1e-9))
+    @test all(isapprox.(Measurements.uncertainty.(data.q), X .* 0.05, atol=1e-9))
     @test all(isapprox.(Measurements.uncertainty.(data.R), DY, atol=1e-9))
     @test isequal(data.name, string(pwd(), Base.Filesystem.path_separator, "with_res.dat"))
 end
