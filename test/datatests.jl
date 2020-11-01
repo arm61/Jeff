@@ -72,20 +72,6 @@ end
     @test isequal(data.name, string(pwd(), Base.Filesystem.path_separator, "with_res.dat"))
 end
 
-@testset "data_distribution" begin
-    q = zeros(Measurement, 100)
-    R = zeros(Measurement, 100)
-    res = []
-    for i in range(1, 100, step=1)
-        q[i] = measurement(X[i], DX[i])
-        R[i] = measurement(Y[i], DY[i])
-        push!(res, Normal(X[i], DX[i]))
-    end
-    data = Jeff.Data(q, R, res, "test")
-    @test all(isapprox.(hcat(mean.(Jeff.get_distribution(data.q, data.R))...)[1, :], X, atol=1e-9))
-    @test all(isapprox.(hcat(mean.(Jeff.get_distribution(data.q, data.R))...)[2, :], Y, atol=1e-9))
-end
-
 @testset "data_transform_default" begin
     q = zeros(Measurement, 100)
     R = zeros(Measurement, 100)

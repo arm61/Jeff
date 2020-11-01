@@ -4,13 +4,17 @@
 A parameter that can be optimised in the analysis procress.
 
 ### Parameters
-- `value::Float64` : the value for the given parameter.
-- `vary::Bool` : should the parameter be varied in optimisation.
-- `prior::Distrbutions.UnivariateDistribution` : the prior probability distribution for the parameter. If `vary` is `false`, then `nothing` can be passed as the `prior`.
+- `value::Float64` or `Distributions.UnivariateDistribution` : the value for the given parameter.
 """
 mutable struct Parameter
     value
-    name::String
+end
+
+"""
+    make_layer
+"""
+function make_layer(thick, sld, isld, rough)
+    return Layer(Parameter(thick), Parameter(sld), Parameter(isld), Parameter(rough))
 end
 
 """
@@ -29,7 +33,6 @@ mutable struct Layer
     sld::Jeff.Parameter
     isld::Jeff.Parameter
     rough::Jeff.Parameter
-    name::String
 end
 
 """
@@ -46,5 +49,27 @@ mutable struct Model
     scale::Jeff.Parameter
     bkg::Jeff.Parameter
     layers::Array{Jeff.Layer}
-    name::String
+end
+
+"""
+    layers_to_array(layers::Array{Jeff.Layer})
+
+Convert from an array of N Jeff.Layer objects to an Nx4 array.
+
+### Parameters
+- `layers::Array{Jeff.Layer}`: layers to be converted.
+
+### Returns
+- `::Array{Any, 2}` : an array describing the layers.
+"""
+function layers_to_array(layers::Array{Jeff.Layer})
+    nlayers = size(layers, 1)
+    array = Array{Any}(undef, nlayers, 4)
+    for i in 1:nlayers
+        array[i, 1] = layers[i].thick.value
+        array[i, 2] = layers[i].sld.value
+        array[i, 3] = layers[i].isld.value
+        array[i, 4] = layers[i].rough.value
+    end
+    return array
 end

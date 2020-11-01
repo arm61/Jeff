@@ -1,4 +1,4 @@
-using Measurements, DelimitedFiles, Distributions, LinearAlgebra
+using Measurements, DelimitedFiles, Distributions
 
 """
     Data(q::Array{Measurements.Measurement}, R::Array{Measurements.Measurement}, resolution::Array{Distributions.UnivariateDistribution}, filepath::String)
@@ -15,7 +15,7 @@ struct Data
     q::Array{Measurement}
     R::Array{Measurement}
     resolution::Array{Distributions.UnivariateDistribution}
-    name::String
+    filepath::String
 end
 
 """
@@ -41,57 +41,30 @@ function read_data(filename::String; delim=nothing, dq::Float64=5., dR::Float64=
     nrows, ncols = size(x)
     q = zeros(Measurement, nrows)
     R = zeros(Measurement, nrows)
-    resolution = []
     dq /= 100
     dR /= 100
     if ncols == 2
         for i = 1:nrows
             q[i] = measurement(x[i, 1], x[i, 1] * dq)
             R[i] = measurement(x[i, 2], x[i, 2] * dR)
-            push!(resolution, Normal(x[i, 1], x[i, 1] * dq))
         end
     elseif ncols == 3
         for i = 1:nrows
             q[i] = measurement(x[i, 1], x[i, 1] * dq)
             R[i] = measurement(x[i, 2], x[i, 3])
-            push!(resolution, Normal(x[i, 1], x[i, 1] * dq))
         end
     elseif ncols == 4
         for i = 1:nrows
             q[i] = measurement(x[i, 1], x[i, 4])
             R[i] = measurement(x[i, 2], x[i, 3])
-            push!(resolution, Normal(x[i, 1], x[i, 4]))
         end
     else
         for i = 1:nrows
             q[i] = measurement(x[i, 1], x[i, 4])
             R[i] = measurement(x[i, 2], x[i, 3])
-            distribution = getfield(Distributions, Symbol(x[i, 5]))
-            push!(resolution, distribution(x[i, 6:end]...))
         end
     end
     return Data(q, R, resolution, filename)
-end
-
-"""
-    get_distribution(y::Array{Measurements.Measurement})
-
-Return the probability distribution for the data.
-
-### Parameters
-- `y::Array{Measurements.Measurement}` : ordinate data (reflected intensity).
-
-### Returns
-- `::Distributions.MvNormal` : probabilistic description of the data.
-"""
-function get_distribution(x::Array{Measurement}, y::Array{Measurement})
-    distributions = []
-    for i = 1:size(x, 1)
-        position = [Measurements.value(x[i]), Measurements.value(y[i])]
-        uncertainty = [Measurements.uncertainty(x[i]), Measurements.uncertainty(y[i])]
-        push!(distributions, MvNormal(position, Diagonal(uncertainty)))
-    end
-    return distributions
 end
 
 """

@@ -6,5 +6,5 @@ Objects and functions related to reflectometry models.
 Jeff.Model
 Jeff.Parameter
 Jeff.Layer
-Jeff.convert_to_array(layers::Array{Jeff.Layer})
+Jeff.layers_to_array(layers::Array{Jeff.Layer})
 ```
