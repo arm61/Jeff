@@ -43,11 +43,13 @@ function abeles(q::Array{Float64, 1}, layers)
         rough[i - 1] = -2 * layers[i, 4] ^ 2
     end
 
-    mr = Array{Any}(undef, (2, 2))
-    mi = Array{Any}(undef, (2, 2))
-    for j = 1:npnts
+    Threads.@threads for j = 1:npnts
+        mr = Array{Any}(undef, (2, 2))
+        mi = Array{Any}(undef, (2, 2))
+        
         q2 = q[j] ^ 2. / 4. + 0im
         kn = q[j] / 2. + 0im
+
         for i = 1:nlayers + 1
             knn = sqrt(q2 - sld[i + 1])
             rj = (kn - knn) / (kn + knn) * exp(kn * knn * rough[i])
@@ -138,20 +140,20 @@ function gauss(x::Array{Float64, 1}, s::Float64)
 end
 
 """
-    pointwise_smearing(q::Array{Float32, 1}, w::Array{Any, 2}, dq::Array{Float32, 1}; quad_order::Int32=17)
+    pointwise_smearing(q::Array{Float64, 1}, w::Array{Any, 2}, dq::Array{Float64, 1}; quad_order::Int32=17)
 
 Perform the reflectometry calculation with a pointwise smearing.
 
 ### Parmaeters
-- `q::Array{Float32, 1}` : q-vector values.
+- `q::Array{Float64, 1}` : q-vector values.
 - `w::Array{Any, 2}` : an Nx4 array, where N is the number of layers in the system, 1st item in a given row is the thickness, the 2nd the SLD, the 3rd the imaginary SLD, and the 4th the roughness with the layer above.
-- `dq::Array{Float32, 1}` : `dq` values for each `q` value.
+- `dq::Array{Float64, 1}` : `dq` values for each `q` value.
 - `quad_order{Int32, 1}` : The order of the Gaussian quadrature integration for the resolution integration.
 
 ### Returns
 - `::Array{Float64, 1}` : smeared reflectometry values for the given q-vectors, with a pointise smearing.
 """
-function pointwise_smearing(q::Array{Float32, 1}, w::Array{Any, 2}, dq::Array{Float32, 1}; quad_order::Int32=17)
+function pointwise_smearing(q::Array{Float64, 1}, w::Array{Any, 2}, dq::Array{Float64, 1}; quad_order::Int32=17)
 end
 
 """

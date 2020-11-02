@@ -7,7 +7,7 @@ using Turing, Measurements
 The Turing model for the sampling of the reflectometry profile.
 
 ### Parameters
-- `q::Array{Float}` : the q-vector values.
+- `q::Array{Float64}` : the q-vector values.
 - `R::Array{Measurement}` : the reflected intensity values, including uncertainty.
 - `array::Array{Any, 2}` : the layers from which the reflectometry should be found.
 - `scale::Any` : the scale factor.

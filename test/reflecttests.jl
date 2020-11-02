@@ -1,4 +1,4 @@
-using Jeff, Test, DelimitedFiles, Distributions
+using Jeff, Test, DelimitedFiles
 
 LAYERS = Array{Any}(undef, (3, 4))
 LAYERS[1, 1] = 0.0

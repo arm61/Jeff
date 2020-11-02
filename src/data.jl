@@ -31,7 +31,7 @@ Read experimental data from a file and store in a `Jeff.Data` object.
 ### Returns
 - `::Jeff.Data` : a data object containing the relevant information.
 """
-function read_data(filename::String; delim=nothing, dq::Float64=5., dR::Float64=10.)
+function read_data(filename::String; delim=nothing, dq=5., dR=10.)
     if delim === nothing
         x = readdlm(filename)
     else
