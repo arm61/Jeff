@@ -46,7 +46,7 @@ function abeles(q::Array{Float64, 1}, layers)
     Threads.@threads for j = 1:npnts
         mr = Array{Any}(undef, (2, 2))
         mi = Array{Any}(undef, (2, 2))
-        
+
         q2 = q[j] ^ 2. / 4. + 0im
         kn = q[j] / 2. + 0im
 
@@ -65,7 +65,17 @@ function abeles(q::Array{Float64, 1}, layers)
                 mi[2, 2] = (1. + 0im) / beta
                 mi[2, 1] = rj * mi[1, 1]
                 mi[1, 2] = rj * mi[2, 2]
-                mr = mi * mr
+
+                p0 = mr[1, 1] * mi[1, 1] + mr[2, 1] * mi[1, 2]
+                p1 = mr[1, 1] * mi[2, 1] + mr[2, 1] * mi[2, 2]
+                mr[1, 1] = p0
+                mr[2, 1] = p1
+
+                p0 = mr[1, 2] * mi[1, 1] + mr[2, 2] * mi[1, 2]
+                p1 = mr[1, 2] * mi[2, 1] + mr[2, 2] * mi[2, 2]
+
+                mr[1, 2] = p0
+                mr[2, 2] = p1
             end
             kn = knn
         end
