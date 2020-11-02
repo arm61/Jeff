@@ -41,7 +41,7 @@ The Turing model for the sampling of the reflectometry profile.
         resolution_inp ~ resolution.value
     end
 
-    r = zeros(length(q))
+    r = Array{Any}(undef, length(q))
     dr = zeros(length(q))
     for i in 1:length(q)
         r[i] = Measurements.value(R[i])
