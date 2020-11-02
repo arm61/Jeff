@@ -14,7 +14,6 @@ The `struct` for storing experimental datasets.
 struct Data
     q::Array{Measurement}
     R::Array{Measurement}
-    resolution::Array{Distributions.UnivariateDistribution}
     filepath::String
 end
 
@@ -64,7 +63,7 @@ function read_data(filename::String; delim=nothing, dq::Float64=5., dR::Float64=
             R[i] = measurement(x[i, 2], x[i, 3])
         end
     end
-    return Data(q, R, resolution, filename)
+    return Data(q, R, filename)
 end
 
 """

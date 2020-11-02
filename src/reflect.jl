@@ -42,12 +42,9 @@ function abeles(q::Array{Float64, 1}, layers)
             abs(layers[i, 3]) + TINY))
         rough[i - 1] = -2 * layers[i, 4] ^ 2
     end
-    println(rough)
 
-    println(sld)
     mr = Array{Any}(undef, (2, 2))
     mi = Array{Any}(undef, (2, 2))
-
     for j = 1:npnts
         q2 = q[j] ^ 2. / 4. + 0im
         kn = q[j] / 2. + 0im
@@ -141,7 +138,24 @@ function gauss(x::Array{Float64, 1}, s::Float64)
 end
 
 """
-    constant_smearing(q::Array{Float64, 1}, w::Array{Any, 2} resolution::Any, scale::Any, bkg::Any)
+    pointwise_smearing(q::Array{Float32, 1}, w::Array{Any, 2}, dq::Array{Float32, 1}; quad_order::Int32=17)
+
+Perform the reflectometry calculation with a pointwise smearing.
+
+### Parmaeters
+- `q::Array{Float32, 1}` : q-vector values.
+- `w::Array{Any, 2}` : an Nx4 array, where N is the number of layers in the system, 1st item in a given row is the thickness, the 2nd the SLD, the 3rd the imaginary SLD, and the 4th the roughness with the layer above.
+- `dq::Array{Float32, 1}` : `dq` values for each `q` value.
+- `quad_order{Int32, 1}` : The order of the Gaussian quadrature integration for the resolution integration.
+
+### Returns
+- `::Array{Float64, 1}` : smeared reflectometry values for the given q-vectors, with a pointise smearing.
+"""
+function pointwise_smearing(q::Array{Float32, 1}, w::Array{Any, 2}, dq::Array{Float32, 1}; quad_order::Int32=17)
+end
+
+"""
+    constant_smearing(q::Array{Float64, 1}, w::Array{Any, 2}, resolution::Any, scale::Any, bkg::Any)
 
 Perform the reflectometry calculation with a constant convolutional smearing.
 
@@ -163,7 +177,6 @@ function constant_smearing(q::Array{Float64, 1}, w::Array{Any, 2}, resolution, s
     resolution /= 100
     gaussnum = 51
     gaussgpoint = (gaussnum - 1) / 2
-
 
     lowq = minimum(q[:])
     highq = maximum(q[:])

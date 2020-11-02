@@ -29,5 +29,7 @@ end
     q_test = data[:, 1]
     r_test = data[:, 2]
 
-    @test all(isapprox.(Jeff.constant_smearing(q_test, LAYERS, resolution=5.), r_test, atol=1e-1))
+    result = Jeff.constant_smearing(q_test, LAYERS, 0.0, 1.0, 0.0)
+
+    @test all(isapprox.(result, r_test, atol=1e-9))
 end
