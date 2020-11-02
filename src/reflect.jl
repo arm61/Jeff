@@ -34,7 +34,10 @@ function abeles(q::Array{Float64, 1}, layers)
     reflectivity = Array{Any}(undef, npnts)
 
     sld = Array{Any}(undef, nlayers + 2)
-    thick = layers[:, 1] * 1im
+    thick = Array{Any}(undef, size(layers, 1))
+    for i = 1:size(layers, 1)
+        thick[i] = layers[i, 1] * 1im
+    end
     rough = Array{Any}(undef, nlayers + 1)
 
     for i = 2:nlayers+2
