@@ -1,4 +1,4 @@
-using Interpolations, Distributions, ForwardDiff
+using Interpolations, Distributions, ForwardDiff, LinearAlgebra
 
 const TINY = 1e-30
 const _FWHM = 2 * sqrt(2 * log(2.0))
@@ -28,66 +28,65 @@ Performs the Abeles optical matrix calculation.
 ### Returns
 - `::Array{Float64, 1}` : unsmeared reflectometry values for the given q-vectors.
 """
-function abeles(q::Array{Float64, 1}, layers)
-    nlayers = size(layers, 1) - 2
+function abeles(q, w)
+    nlayers = size(w, 1) - 2
     npnts = length(q)
-    reflectivity = Array{Any}(undef, npnts)
 
-    sld = Array{Any}(undef, nlayers + 2)
-    thick = Array{Any}(undef, size(layers, 1))
-    for i = 1:size(layers, 1)
-        thick[i] = layers[i, 1] * 1im
-    end
-    rough = Array{Any}(undef, nlayers + 1)
+    # SLD in each layer, relative to first.
+    sld = zeros(ComplexF64, nlayers + 2)
+    thickness = zeros(ComplexF64, nlayers)
+    rough_sqr = Vector{ComplexF64}(undef, (nlayers + 1))
+    reflectivity = Vector{ComplexF64}(undef, (npnts))
+    oneC = Complex(1.0)
 
     for i = 2:nlayers+2
-        sld[i] = PI4 * (layers[i, 2] - layers[1, 2] + 1im * (
-            abs(layers[i, 3]) + TINY))
-        rough[i - 1] = -2 * layers[i, 4] ^ 2
+        sld[i] = ((w[i, 2] - w[1, 2]) + ((abs(w[i, 3]) + TINY))im) * pi * 4.0e-6
+        rough_sqr[i - 1] = -2.0 * w[i, 4]^2
     end
+    for i=1:nlayers
+        thickness[i] = Complex(0, abs(w[i+1, 1]))
+    end
+    MRtotal = Array{ComplexF64}(undef, (2, 2))
+    MI = Array{ComplexF64}(undef, (2, 2))
+    temp = similar(MRtotal)
 
-    Threads.@threads for j = 1:npnts
-        mr = Array{Any}(undef, (2, 2))
-        mi = Array{Any}(undef, (2, 2))
+    for j in eachindex(q)
+        qq2 = (q[j] * q[j] / 4.0)
+        kn = (q[j] / 2.)
 
-        q2 = q[j] ^ 2. / 4. + 0im
-        kn = q[j] / 2. + 0im
-
-        for i = 1:nlayers + 1
-            knn = sqrt(q2 - sld[i + 1])
-            rj = (kn - knn) / (kn + knn) * exp(kn * knn * rough[i])
+        for i = 1:nlayers+1
+            # wavevector in the layer
+            kn_next = sqrt(qq2 - sld[i + 1])
+            # reflectance of the interface
+            rj = (kn - kn_next)/(kn + kn_next) * exp(kn * kn_next * rough_sqr[i])
 
             if i == 1
-                mr[1, 1] = 1. + 0im
-                mr[1, 2] = rj
-                mr[2, 2] = 1. + 0im
-                mr[2, 1] = rj
+                # characteristic matrix for first interface
+                MRtotal[1, 1] = oneC
+                MRtotal[1, 2] = rj
+                MRtotal[2, 2] = oneC
+                MRtotal[2, 1] = rj
             else
-                beta = exp(kn * thick[i])
-                mi[1, 1] = beta
-                mi[2, 2] = (1. + 0im) / beta
-                mi[2, 1] = rj * mi[1, 1]
-                mi[1, 2] = rj * mi[2, 2]
-
-                p0 = mr[1, 1] * mi[1, 1] + mr[2, 1] * mi[1, 2]
-                p1 = mr[1, 1] * mi[2, 1] + mr[2, 1] * mi[2, 2]
-                mr[1, 1] = p0
-                mr[2, 1] = p1
-
-                p0 = mr[1, 2] * mi[1, 1] + mr[2, 2] * mi[1, 2]
-                p1 = mr[1, 2] * mi[2, 1] + mr[2, 2] * mi[2, 2]
-
-                mr[1, 2] = p0
-                mr[2, 2] = p1
+                # work out the beta for the layer
+                beta = exp(kn * thickness[i - 1])
+                # this is the characteristic matrix of a layer
+                MI[1, 1] = beta
+                MI[1, 2] = rj * beta
+                MI[2, 2] = oneC / beta
+                MI[2, 1] = rj * MI[2, 2]
+                # multiply MRtotal, MI to get the updated total matrix.
+                # do an in-place multiplication to reduce allocations
+                mul!(temp, MRtotal, MI)
+                MRtotal .= temp
+                # MRtotal = MRtotal * MI
             end
-            kn = knn
+            kn = kn_next;
         end
-
-        r = mr[1, 2] / mr[1, 1]
-        reflectivity[j] = real(r * conj(r))
+        reflectivity[j] = MRtotal[2, 1] / MRtotal[1, 1]
     end
-    return reflectivity
+    return real(reflectivity .* conj(reflectivity))
 end
+
 
 """
     same_convolution(a::Array{Float64, 1}, b::Array{Float64, 1})
