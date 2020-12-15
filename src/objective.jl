@@ -14,7 +14,7 @@ The Turing model for the sampling of the reflectometry profile.
 - `bkg::Any` : the background level.
 - `resolution::Any` : the constant resolution width.
 """
-@model t_model(q::Array{Float64, 1}, R::Array{Measurement, 1}, layers, scale, bkg, resolution) = begin
+@model function t_model(q, R, layers, scale, bkg, resolution)
     layers_inp = Array{Any}(undef, size(layers))
     for i in 1:size(layers, 1)
         for j in 1:size(layers, 2)
