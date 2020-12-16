@@ -1,5 +1,8 @@
 using Jeff, Test, DelimitedFiles
 
+sep = Base.Filesystem.path_separator
+curdir = pwd()
+
 LAYERS = Array{Any}(undef, (3, 4))
 LAYERS[1, 1] = 0.0
 LAYERS[1, 2] = 0.0
@@ -15,7 +18,7 @@ LAYERS[3, 3] = 0.0
 LAYERS[3, 4] = 3.
 
 @testset "abeles" begin
-    data = readdlm(string(pwd(), Base.Filesystem.path_separator, "theoretical.txt"))
+    data = readdlm(joinpath(curdir, "data", "theoretical.txt"))
     q_test = data[:, 1]
     r_test = data[:, 2]
 
@@ -25,7 +28,7 @@ LAYERS[3, 4] = 3.
 end
 
 @testset "constant_smearing" begin
-    data = readdlm(string(pwd(), Base.Filesystem.path_separator, "theoretical.txt"))
+    data = readdlm(string(curdir, "data", "theoretical.txt"))
     q_test = data[:, 1]
     r_test = data[:, 2]
 
