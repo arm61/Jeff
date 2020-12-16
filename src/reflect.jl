@@ -103,7 +103,7 @@ Performs a convolution of one-dimensional arrays equivalent to the [`np.convolve
 ### Returns
 - `::Array{Float64, 1}` : discrete, linear convolution of `a` and `b`.
 """
-function same_convolution(a::Array{Any, 1}, b::Array{Float64, 1})
+function same_convolution(a, b)
 
     m = length(a)
     n = length(b)
@@ -219,7 +219,7 @@ Perform the reflectometry calculation with a constant convolutional smearing.
 ### Returns
 - `::Array{Float64, 1}` : smeared reflectometry values for the given q-vectors.
 """
-function constant_smearing(q::Array{Float64, 1}, w::Array{Any, 2}, resolution, scale, bkg)
+function constant_smearing(q, w, resolution, scale, bkg)
     if resolution < 0.5
         return abeles(q, w)
     end

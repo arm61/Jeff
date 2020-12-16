@@ -46,6 +46,16 @@ end
 
     result = Jeff.constant_smearing(q_test, LAYERS, 0.0, 1.0, 0.0)
     @test all(isapprox.(result, r_test, atol=1e-9))
+
+    # ORSO tests
+    data = readdlm(joinpath(curdir, "data", "test4.dat"))
+    q_test = data[:, 1]
+    r_test = data[:, 2]
+    layers = readdlm(joinpath(curdir, "data", "test0.layers"))
+    result = Jeff.constant_smearing(q_test, layers, 5.0, 1.0, 0.0)
+    # same tolerance as used in ORSO test for refnx
+    # should look into whether this can be tightened.
+    @test all(isapprox.(result, r_test, rtol=0.03))
 end
 
 
