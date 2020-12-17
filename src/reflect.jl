@@ -1,13 +1,16 @@
-using Interpolations, Distributions, ForwardDiff
+using Interpolations, Distributions, ForwardDiff, LinearAlgebra, FastGaussQuadrature
 
 const TINY = 1e-30
 const _FWHM = 2 * sqrt(2 * log(2.0))
 const PI4 = 4e-6 * pi
+const _INTLIMIT = 3.5
 
 
-Base.float(d::ForwardDiff.Dual{T}) where T = ForwardDiff.Dual{T}(float(d.value), d.partials)
-Base.prevfloat(d::ForwardDiff.Dual{T,V,N}) where {T,V,N} = ForwardDiff.Dual{T}(prevfloat(float(d.value)), d.partials)
-Base.nextfloat(d::ForwardDiff.Dual{T,V,N}) where {T,V,N} = ForwardDiff.Dual{T}(nextfloat(float(d.value)), d.partials)
+# Base.float(d::ForwardDiff.Dual{T}) where T = ForwardDiff.Dual{T}(float(d.value), d.partials)
+# Base.prevfloat(d::ForwardDiff.Dual{T,V,N}) where {T,V,N} = ForwardDiff.Dual{T}(prevfloat(float(d.value)), d.partials)
+# Base.nextfloat(d::ForwardDiff.Dual{T,V,N}) where {T,V,N} = ForwardDiff.Dual{T}(nextfloat(float(d.value)), d.partials)
+
+
 function Base.ldexp(x::T, e::Integer) where T<:ForwardDiff.Dual
     if e >=0
         x * (1<<e)
@@ -15,6 +18,7 @@ function Base.ldexp(x::T, e::Integer) where T<:ForwardDiff.Dual
         x / (1<<-e)
     end
 end
+
 
 """
     abeles(q::Array{Float64, 1}, layers::Array{Float64, 2})
@@ -28,66 +32,64 @@ Performs the Abeles optical matrix calculation.
 ### Returns
 - `::Array{Float64, 1}` : unsmeared reflectometry values for the given q-vectors.
 """
-function abeles(q::Array{Float64, 1}, layers)
-    nlayers = size(layers, 1) - 2
+function abeles(q, w)
+    nlayers = size(w, 1) - 2
     npnts = length(q)
-    reflectivity = Array{Any}(undef, npnts)
 
-    sld = Array{Any}(undef, nlayers + 2)
-    thick = Array{Any}(undef, size(layers, 1))
-    for i = 1:size(layers, 1)
-        thick[i] = layers[i, 1] * 1im
-    end
-    rough = Array{Any}(undef, nlayers + 1)
+    reflectivity = Vector{Any}(undef, (npnts))
+    oneC = Complex(1.0)
 
-    for i = 2:nlayers+2
-        sld[i] = PI4 * (layers[i, 2] - layers[1, 2] + 1im * (
-            abs(layers[i, 3]) + TINY))
-        rough[i - 1] = -2 * layers[i, 4] ^ 2
-    end
+    for j in eachindex(q)
+        qq2 = (q[j] * q[j] / 4.0) + 0.0im
+        kn = (q[j] / 2.) + 0.0im
 
-    Threads.@threads for j = 1:npnts
-        mr = Array{Any}(undef, (2, 2))
-        mi = Array{Any}(undef, (2, 2))
+        # variables are local to if blocks
+        local MRtotal11, MRtotal12, MRtotal21, MRtotal22
 
-        q2 = q[j] ^ 2. / 4. + 0im
-        kn = q[j] / 2. + 0im
+        for i = 1:nlayers+1
+            # wavevector in the layer
+            sld_next = ((w[i+1, 2] - w[1, 2]) + ((abs(w[i+1, 3]) + TINY))im) * pi * 4.0e-6
+            kn_next = sqrt(qq2 - sld_next)
 
-        for i = 1:nlayers + 1
-            knn = sqrt(q2 - sld[i + 1])
-            rj = (kn - knn) / (kn + knn) * exp(kn * knn * rough[i])
+            # reflectance of the interface
+            rj = (kn - kn_next)/(kn + kn_next) * exp(kn * kn_next * (-2.0 * w[i+1, 4]^2))
 
             if i == 1
-                mr[1, 1] = 1. + 0im
-                mr[1, 2] = rj
-                mr[2, 2] = 1. + 0im
-                mr[2, 1] = rj
+                # characteristic matrix for first interface
+                MRtotal11 = oneC
+                MRtotal12 = rj
+                MRtotal21 = rj
+                MRtotal22 = oneC
             else
-                beta = exp(kn * thick[i])
-                mi[1, 1] = beta
-                mi[2, 2] = (1. + 0im) / beta
-                mi[2, 1] = rj * mi[1, 1]
-                mi[1, 2] = rj * mi[2, 2]
+                # work out the beta for the layer
+                beta = exp(kn * (abs(w[i, 1]) * 1im))
 
-                p0 = mr[1, 1] * mi[1, 1] + mr[2, 1] * mi[1, 2]
-                p1 = mr[1, 1] * mi[2, 1] + mr[2, 1] * mi[2, 2]
-                mr[1, 1] = p0
-                mr[2, 1] = p1
+                # this is the characteristic matrix of a layer
+                MI11 = beta
+                MI12 = rj * beta
+                MI22 = oneC / beta
+                MI21 = rj * MI22
 
-                p0 = mr[1, 2] * mi[1, 1] + mr[2, 2] * mi[1, 2]
-                p1 = mr[1, 2] * mi[2, 1] + mr[2, 2] * mi[2, 2]
+                # propagate optical matrix by matmul
+                p11 = MRtotal11 * MI11 + MRtotal12 * MI21
+                p12 = MRtotal11 * MI12 + MRtotal12 * MI22
+                p21	= MRtotal21 * MI11 + MRtotal22 * MI21
+                p22 = MRtotal21 * MI12 + MRtotal22 * MI22
 
-                mr[1, 2] = p0
-                mr[2, 2] = p1
+                MRtotal11 = p11
+                MRtotal12 = p12
+                MRtotal21 = p21
+                MRtotal22 = p22
+
             end
-            kn = knn
-        end
+            kn = kn_next;
 
-        r = mr[1, 2] / mr[1, 1]
-        reflectivity[j] = real(r * conj(r))
+        end
+        reflectivity[j] = MRtotal21 / MRtotal11
     end
-    return reflectivity
+    return real(reflectivity .* conj(reflectivity))
 end
+
 
 """
     same_convolution(a::Array{Float64, 1}, b::Array{Float64, 1})
@@ -101,7 +103,7 @@ Performs a convolution of one-dimensional arrays equivalent to the [`np.convolve
 ### Returns
 - `::Array{Float64, 1}` : discrete, linear convolution of `a` and `b`.
 """
-function same_convolution(a::Array{Any, 1}, b::Array{Float64, 1})
+function same_convolution(a, b)
 
     m = length(a)
     n = length(b)
@@ -157,7 +159,7 @@ end
 
 Perform the reflectometry calculation with a pointwise smearing.
 
-### Parmaeters
+### Parameters
 - `q::Array{Float64, 1}` : q-vector values.
 - `w::Array{Any, 2}` : an Nx4 array, where N is the number of layers in the system, 1st item in a given row is the thickness, the 2nd the SLD, the 3rd the imaginary SLD, and the 4th the roughness with the layer above.
 - `dq::Array{Float64, 1}` : `dq` values for each `q` value.
@@ -166,8 +168,41 @@ Perform the reflectometry calculation with a pointwise smearing.
 ### Returns
 - `::Array{Float64, 1}` : smeared reflectometry values for the given q-vectors, with a pointise smearing.
 """
-function pointwise_smearing(q::Array{Float64, 1}, w::Array{Any, 2}, dq::Array{Float64, 1}; quad_order::Int32=17)
+function pointwise_smearing(q, w, dq, quad_order::Int=17)
+    # not sure how one checks that q, dq have same size.
+    npnts = length(q)
+
+    # get the gauss-legendre weights and abscissae
+    # TODO: is it possible to use a LRU cache?
+    abscissa, weights = gausslegendre(quad_order)
+
+    # get the normal distribution at that point
+    prefactor = 1.0 / sqrt(2 * pi)
+
+    function gauss(x)
+        return exp(-0.5 * x * x)
+    end
+
+    # TODO: is it possible to use a LRU cache?
+    gaussvals = prefactor * gauss.(abscissa * _INTLIMIT) .* weights
+
+    # integration between -3.5 and 3.5 sigma
+    va = q .- _INTLIMIT .* dq ./ _FWHM
+    vb = q .+ _INTLIMIT .* dq ./ _FWHM
+
+    # (quad_order, npnts)
+    qvals_for_res = [(ab * (li[2] - li[1]) + li[2] + li[1])/2.0 for ab=abscissa, li=zip(va, vb)]
+    smeared_rvals = abeles(qvals_for_res, w)
+
+    # abeles flattens the q vector
+    smeared_rvals = reshape(smeared_rvals, size(qvals_for_res))
+    m = reshape(gaussvals, (quad_order, 1))
+
+    smeared_rvals .*= m
+    rvals = sum(smeared_rvals, dims=1) .* _INTLIMIT
+    return reshape(rvals, size(q))
 end
+
 
 """
     constant_smearing(q::Array{Float64, 1}, w::Array{Any, 2}, resolution::Any, scale::Any, bkg::Any)
@@ -184,7 +219,7 @@ Perform the reflectometry calculation with a constant convolutional smearing.
 ### Returns
 - `::Array{Float64, 1}` : smeared reflectometry values for the given q-vectors.
 """
-function constant_smearing(q::Array{Float64, 1}, w::Array{Any, 2}, resolution, scale, bkg)
+function constant_smearing(q, w, resolution, scale, bkg)
     if resolution < 0.5
         return abeles(q, w)
     end
