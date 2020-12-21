@@ -73,7 +73,7 @@ function abeles(q, w)
                 # propagate optical matrix by matmul
                 p11 = MRtotal11 * MI11 + MRtotal12 * MI21
                 p12 = MRtotal11 * MI12 + MRtotal12 * MI22
-                p21	= MRtotal21 * MI11 + MRtotal22 * MI21
+                p21 = MRtotal21 * MI11 + MRtotal22 * MI21
                 p22 = MRtotal21 * MI12 + MRtotal22 * MI22
 
                 MRtotal11 = p11
