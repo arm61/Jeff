@@ -1,4 +1,4 @@
-using Jeff, Test, DelimitedFiles
+using Jeff, Test, DelimitedFiles, ForwardDiff
 
 curdir = pwd()
 FWHM = 2.0 * sqrt(2.0 * log(2.0))
@@ -26,6 +26,7 @@ LAYERS[3, 4] = 3.
     result = Jeff.abeles(q_test, LAYERS)
     @test all(isapprox.(result, r_test, atol=1e-9))
 
+    local layers
     # some of the ORSO tests
     for i in [0, 1, 2, 3, 6]
         layers = readdlm(joinpath(curdir, "data", "test$i.layers"))
@@ -36,6 +37,10 @@ LAYERS[3, 4] = 3.
         # same tolerances as used in ORSO test for refnx
         @test all(isapprox.(result, r_test, rtol=8e-5))
     end
+
+    # check that abeles is differentiable
+    f = x -> sum(Jeff.abeles(q_test, x))
+    ForwardDiff.gradient(f, layers)
 end
 
 
