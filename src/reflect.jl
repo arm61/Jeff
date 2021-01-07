@@ -237,13 +237,9 @@ function constant_smearing(q, w, resolution, scale, bkg)
     start = log10(lowq) - 6 * resolution / _FWHM
     finish = log10(highq * (1 + 6 * resolution / _FWHM))
     interpnum = round(abs(1 * (abs(start - finish)) / (1.7 * resolution / _FWHM / gaussgpoint)))
-    xtemp = range(start, finish, length=Int(interpnum))
-    xlin = zeros(size(xtemp, 1))
-    for i = 1:size(xtemp, 1)
-        xlin[i] = 10. ^ xtemp[i]
-    end
+    xlin = 10 .^ LinRange(start, finish, Int(interpnum))
 
-    gauss_x = collect(range(-1.7 * resolution, 1.7 * resolution, length=gaussnum))
+    gauss_x = collect(LinRange(-1.7 * resolution, 1.7 * resolution, gaussnum))
     gauss_y = gauss(gauss_x, resolution / _FWHM)
 
     rvals = abeles(xlin, w)
